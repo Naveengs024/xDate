@@ -6,6 +6,11 @@
   box-sizing: border-box;
 }
 
+.swal2-show {
+  animation: swal2-show .3s;
+  width: 300px;
+  font-size: 6px;
+}
 body,
 input {
   font-family: "Poppins", sans-serif;

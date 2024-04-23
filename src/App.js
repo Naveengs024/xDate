@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import './App.css';
 
-import $ from 'jquery';
 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Swal from 'sweetalert2';
 
 function UserForm() {
-  
+  const [showPassword, setShowPassword] = useState(false);
+  const togglePasswordVisibility = () => {
+    debugger
+    setShowPassword(!showPassword);
+  };
   const [isSignUpMode, setIsSignUpMode] = useState(false);
 
   const toggleMode = () => {
@@ -30,13 +34,14 @@ function UserForm() {
     isDeleted: false,
   });
 
-  //const [toasterMessage, setToasterMessage] = React.useState(null);
+
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -59,8 +64,9 @@ function UserForm() {
       const { statusCode, message } = responseData;
 
       if (statusCode === 1) {
-                toast.success(message);
-    toggleMode();
+        toast.success(message);
+        toggleMode();
+               
 
       } else {
         toast.warning(message);
@@ -88,6 +94,46 @@ function UserForm() {
     }
   };
 
+  const emailvalidation = async (e) => {
+    e.preventDefault();
+    try {
+      const queryString = `?user_Email=${formData.user_Email}`; // Construct query string
+      const response = await fetch(`http://localhost:39219/Login/GetUserEmailValidation${queryString}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to submit form');
+      }
+  
+      const responseData = await response.json();
+      const { statusCode, message } = responseData;
+  
+      if (statusCode === 2) {
+        
+        Swal.fire({
+          title: message,
+          showConfirmButton: true,
+          showCancelButton: true,
+          confirmButtonText: "OK",
+          cancelButtonText: "Cancel",
+          icon: 'warning'
+      } )
+    }
+  
+     
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      // setToasterMessage({ type: 'error', message: 'Failed to submit form. Please try again.' });
+    }
+  };
+  
+
+
+
   return (
     <div className={`container ${isSignUpMode ? 'sign-up-mode' : ''}`}>
       <div className="forms-container">
@@ -100,7 +146,9 @@ function UserForm() {
             </div>
             <div className="input-field">
               <i className="fas fa-lock"></i>
-              <input type="password" placeholder="Password" />
+              <input  type={showPassword ? 'text' : 'password'} placeholder="Password" />
+              <span><i id="toggler"className={showPassword ? 'far fa-eye-slash' : 'far fa-eye'}  onClick={togglePasswordVisibility}></i>
+</span>
             </div>
             <input type="submit" value="Login" className="btn solid" />
           </form>
@@ -119,31 +167,30 @@ function UserForm() {
             <div className="input-field">
               <i className="fas fa-envelope"></i>
               <input
-                type="email"
-                name="user_Email"
-                value={formData.user_Email}
-                onChange={handleChange}
-                placeholder="Email"
-              />
+  type="email"
+  name="user_Email"
+  value={formData.user_Email}
+  onChange={handleChange}
+  onBlur={emailvalidation} // Use onBlur event here
+  placeholder="Email"
+/>
             </div>
             <div className="input-field">
-              <i className="fas fa-lock"></i>
+              <i className="fa fa-lock"></i>
               <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Password"
-              />
+        type={showPassword ? 'text' : 'password'}
+        name="password"
+        value={formData.password}
+        onChange={handleChange}
+        placeholder="Password"
+        id="password"
+      />
+       <span><i id="toggler"className={showPassword ? 'far fa-eye-slash' : 'far fa-eye'}  onClick={togglePasswordVisibility}></i>
+</span>
             </div>
             <input type="submit" className="btn" value="Sign up" />
           </form>
-          {/* {toasterMessage && (
-            <div className={toasterMessage.type === 'success' ? 'toaster-success' : 'toaster-error'}>
-              {toasterMessage.message}
-            </div>
-
-          )} */}
+          
          
         </div>
       </div>

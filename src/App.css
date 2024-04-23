@@ -397,3 +397,10 @@ form.sign-in-form {
     left: 50%;
   }
 }
+#toggler {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
