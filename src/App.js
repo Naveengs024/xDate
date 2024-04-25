@@ -9,7 +9,6 @@ import Swal from 'sweetalert2';
 function UserForm() {
   const [showPassword, setShowPassword] = useState(false);
   const togglePasswordVisibility = () => {
-    debugger
     setShowPassword(!showPassword);
   };
   const [isSignUpMode, setIsSignUpMode] = useState(false);
@@ -33,15 +32,48 @@ function UserForm() {
     modifiedDate: new Date().toISOString(),
     isDeleted: false,
   });
-
-
-
+  const [loginData, setLoginData] = React.useState({
+    user_Name: '',
+    password: ''
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-  
+
+  const handleLoginChange = (e) => {
+    const { name, value } = e.target;
+    setLoginData({ ...loginData, [name]: value });
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('http://localhost:39219/Login/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(loginData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit form');
+      }
+      const responseData = await response.json();
+      const { Token } = responseData;
+
+      // Store the token in localStorage or sessionStorage
+      localStorage.setItem('token', Token);
+
+      // Redirect or perform other actions after successful login
+      console.log('Login successful');
+    } catch (error) {
+      console.log('Invalid username or password');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -52,8 +84,6 @@ function UserForm() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
-       
-        
       });
 
       if (!response.ok) {
@@ -66,8 +96,6 @@ function UserForm() {
       if (statusCode === 1) {
         toast.success(message);
         toggleMode();
-               
-
       } else {
         toast.warning(message);
       }
@@ -90,30 +118,28 @@ function UserForm() {
       });
     } catch (error) {
       console.error('Error submitting form:', error);
-     // setToasterMessage({ type: 'error', message: 'Failed to submit form. Please try again.' });
     }
   };
 
   const emailvalidation = async (e) => {
     e.preventDefault();
     try {
-      const queryString = `?user_Email=${formData.user_Email}`; // Construct query string
+      const queryString = `?user_Email=${formData.user_Email}`;
       const response = await fetch(`http://localhost:39219/Login/GetUserEmailValidation${queryString}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
       });
-  
+
       if (!response.ok) {
         throw new Error('Failed to submit form');
       }
-  
+
       const responseData = await response.json();
       const { statusCode, message } = responseData;
-  
+
       if (statusCode === 2) {
-        
         Swal.fire({
           title: message,
           showConfirmButton: true,
@@ -121,34 +147,45 @@ function UserForm() {
           confirmButtonText: "OK",
           cancelButtonText: "Cancel",
           icon: 'warning'
-      } )
-    }
-  
-     
+        });
+      }
     } catch (error) {
       console.error('Error submitting form:', error);
-      // setToasterMessage({ type: 'error', message: 'Failed to submit form. Please try again.' });
     }
   };
-  
-
-
 
   return (
     <div className={`container ${isSignUpMode ? 'sign-up-mode' : ''}`}>
       <div className="forms-container">
         <div className="signin-signup">
-          <form action="#" className="sign-in-form">
+          <form onSubmit={handleLogin} className="sign-in-form">
             <h2 className="title">Sign in</h2>
             <div className="input-field">
               <i className="fas fa-user"></i>
-              <input type="text" placeholder="Username" />
+              <input
+                type="text"
+                name="user_Name"
+                value={loginData.user_Name}
+                onChange={handleLoginChange}
+                placeholder="Username"
+              />
             </div>
             <div className="input-field">
               <i className="fas fa-lock"></i>
-              <input  type={showPassword ? 'text' : 'password'} placeholder="Password" />
-              <span><i id="toggler"className={showPassword ? 'far fa-eye-slash' : 'far fa-eye'}  onClick={togglePasswordVisibility}></i>
-</span>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                value={loginData.password}
+                onChange={handleLoginChange}
+                placeholder="Password"
+              />
+              <span>
+                <i
+                  id="toggler"
+                  className={showPassword ? 'far fa-eye-slash' : 'far fa-eye'}
+                  onClick={togglePasswordVisibility}
+                ></i>
+              </span>
             </div>
             <input type="submit" value="Login" className="btn solid" />
           </form>
@@ -167,31 +204,34 @@ function UserForm() {
             <div className="input-field">
               <i className="fas fa-envelope"></i>
               <input
-  type="email"
-  name="user_Email"
-  value={formData.user_Email}
-  onChange={handleChange}
-  onBlur={emailvalidation} // Use onBlur event here
-  placeholder="Email"
-/>
+                type="email"
+                name="user_Email"
+                value={formData.user_Email}
+                onChange={handleChange}
+                onBlur={emailvalidation}
+                placeholder="Email"
+              />
             </div>
             <div className="input-field">
               <i className="fa fa-lock"></i>
               <input
-        type={showPassword ? 'text' : 'password'}
-        name="password"
-        value={formData.password}
-        onChange={handleChange}
-        placeholder="Password"
-        id="password"
-      />
-       <span><i id="toggler"className={showPassword ? 'far fa-eye-slash' : 'far fa-eye'}  onClick={togglePasswordVisibility}></i>
-</span>
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Password"
+                id="password"
+              />
+              <span>
+                <i
+                  id="toggler"
+                  className={showPassword ? 'far fa-eye-slash' : 'far fa-eye'}
+                  onClick={togglePasswordVisibility}
+                ></i>
+              </span>
             </div>
             <input type="submit" className="btn" value="Sign up" />
           </form>
-          
-         
         </div>
       </div>
 
