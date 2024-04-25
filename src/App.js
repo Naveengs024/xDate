@@ -1,17 +1,21 @@
-import React, { useState } from 'react';
-import './App.css';
-
-
+import React, { useState,useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
+import { Redirect } from 'react-router-dom';
+
+import './App.css';
+import { BrowserRouter as Router } from 'react-router-dom';
 
 function UserForm() {
   const [showPassword, setShowPassword] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [redirectTo, setRedirectTo] = useState(null);
+  const [isSignUpMode, setIsSignUpMode] = useState(false);
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-  const [isSignUpMode, setIsSignUpMode] = useState(false);
 
   const toggleMode = () => {
     setIsSignUpMode(!isSignUpMode);
@@ -32,6 +36,7 @@ function UserForm() {
     modifiedDate: new Date().toISOString(),
     isDeleted: false,
   });
+
   const [loginData, setLoginData] = React.useState({
     user_Name: '',
     password: ''
@@ -64,15 +69,27 @@ function UserForm() {
       const responseData = await response.json();
       const { Token } = responseData;
 
-      // Store the token in localStorage or sessionStorage
+      // Store the token in localStorage
       localStorage.setItem('token', Token);
 
-      // Redirect or perform other actions after successful login
       console.log('Login successful');
+      setIsAuthenticated(true); // Set authentication state to true
     } catch (error) {
-      console.log('Invalid username or password');
+      console.log(error);
     }
   };
+
+  useEffect(() => {
+    // Check localStorage for token on component mount
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  if (isAuthenticated) {
+    return <Redirect to="/Main" />;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -263,11 +280,15 @@ function UserForm() {
 
 function App() {
   return (
-    <div>
-      <ToastContainer />
-      <UserForm />
-    </div>
+    <Router>
+      <div>
+        <ToastContainer />
+        <UserForm />
+        
+      </div>
+    </Router>
   );
+
 }
 
 export default App;
